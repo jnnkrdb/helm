@@ -22,6 +22,7 @@ jobs:
       - name: Git Clone
         run: |
           git clone https://jnnkrdb:${{ secrets.GHP_TOKEN }}@github.com/${{ github.repository }} .
+          ls -lah 
           git fetch
 
       - name: Create Index
