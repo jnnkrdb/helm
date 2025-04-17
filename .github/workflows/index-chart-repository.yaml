@@ -14,21 +14,23 @@ jobs:
     env:
       HELM_URL: https://jnnkrdb.github.io/helm/
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+
+      - name: Git Clone
+        run: git clone https://jnnkrdb:${{ secrets.GHP_TOKEN }}@github.com/${{ github.repository }}
 
       - name: Create Index
         run: |
           if [ "" != "$(git diff --name-status HEAD~ ./charts)" ]; then
             echo "Creating new index.yaml"
             helm repo index --url $HELM_URL .
-            git config --local user.name "$GITHUB_ACTOR"
+            git config --local user.name "jnnkrdb"
             git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
             git add .
             git commit -m "added helmchart changes | $(date +"%Y-%m-%d - %H:%M:%S")"
-            git remote set-url origin https://jnnkrdb:${{ secrets.GHP_TOKEN }}@github.com/${{ github.repository }}
             git push
           else 
             echo "NO changes made"
