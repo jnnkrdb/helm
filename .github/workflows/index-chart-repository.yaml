@@ -3,7 +3,7 @@ name: CREATE NEW CHART INDEX
 on:
   push:
     branches:
-      - input
+      - master
     paths-ignore:
       - '.devcontainer/**'
       - 'README.md'
@@ -19,13 +19,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Template
-        run: helm repo index --url $HELM_URL .
-
-      - name: Upload to master
+      - name: Create Index
         run: |
-          git config --local user.name actions-user
-          git config --local user.email "actions@github.com"
-          git add .
-          git commit -m "added helmchart changes"
-          git push -f origin master
+          if [ "" != "$(git diff --name-status HEAD~ ./charts)" ]; then
+            echo "Creating new index.yaml"
+            helm repo index --url $HELM_URL .
+            git config --local user.name actions-user
+            git config --local user.email "actions@github.com"
+            git add .
+            git commit -m "added helmchart changes | $(date +"%Y-%m-%d - %H:%M:%S")"
+            git push
+          else 
+            echo "NO changes made"
+          fi
+          
