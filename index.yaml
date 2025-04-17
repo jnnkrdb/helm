@@ -3,7 +3,7 @@ entries:
   echosec:
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-17T19:19:43.495317829Z"
+    created: "2025-04-17T22:31:52.662054364Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 8a17dfb663a111897b76b9152c19cefc5880b56ea3b582e2793cb85f2b8752fc
     name: echosec
@@ -13,7 +13,7 @@ entries:
     version: 1.0.0
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-17T19:19:43.494894564Z"
+    created: "2025-04-17T22:31:52.661808557Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: dfba2fe56b17df9a76f9c2d42f166d417c1c0336ef1b41b282ec1a15730f4511
     name: echosec
@@ -21,4 +21,14 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/charts/echosec-0.1.0.tgz
     version: 0.1.0
-generated: "2025-04-17T19:19:43.494123415Z"
+  - apiVersion: v2
+    appVersion: dev
+    created: "2025-04-17T22:31:52.661424232Z"
+    description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
+    digest: 45548224a3acae8b46b1284ed8c41cb3ab0cef72dfe342917d3ffc090db8607a
+    name: echosec
+    type: application
+    urls:
+    - https://jnnkrdb.github.io/helm/charts/echosec-0.1.0-alpha.55.tgz
+    version: 0.1.0-alpha.55
+generated: "2025-04-17T22:31:52.661049245Z"
