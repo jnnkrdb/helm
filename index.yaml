@@ -3,9 +3,9 @@ entries:
   echosec:
   - apiVersion: v2
     appVersion: master
-    created: "2025-04-18T10:45:01.874219935Z"
+    created: "2025-04-18T12:46:44.265937797Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
-    digest: ca268e99fb668105caeffc87577a14800daad419a4ad7f66fc0d53171188a567
+    digest: c4b8816315e35663efbaa8cbc3aabdf8f836742f4cb1a84958c1beff1ffff69a
     name: echosec
     type: application
     urls:
@@ -13,7 +13,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-18T10:45:01.87399729Z"
+    created: "2025-04-18T12:46:44.265721072Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: c43fd52bb63113beab8b548dfb18d46b94fd2423e59b96e77937df91f8b42b8e
     name: echosec
@@ -23,7 +23,7 @@ entries:
     version: 0.1.0-alpha.58
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-18T10:45:01.873766149Z"
+    created: "2025-04-18T12:46:44.265470294Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 2173df5ee5fa5f34902b881059b801ad81167b50f7a89a0714afab76d361a9b2
     name: echosec
@@ -33,7 +33,7 @@ entries:
     version: 0.1.0-alpha.57
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-18T10:45:01.873542893Z"
+    created: "2025-04-18T12:46:44.265084563Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: c7c71f0a11c40776dccc4c191b0a4180f09130cee9de07c0c47c82f2f252bc57
     name: echosec
@@ -43,7 +43,7 @@ entries:
     version: 0.1.0-alpha.56
   - apiVersion: v2
     appVersion: dev
-    created: "2025-04-18T10:45:01.873105026Z"
+    created: "2025-04-18T12:46:44.264848523Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 45548224a3acae8b46b1284ed8c41cb3ab0cef72dfe342917d3ffc090db8607a
     name: echosec
@@ -51,4 +51,4 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/charts/echosec-0.1.0-alpha.55.tgz
     version: 0.1.0-alpha.55
-generated: "2025-04-18T10:45:01.872726119Z"
+generated: "2025-04-18T12:46:44.264457402Z"
