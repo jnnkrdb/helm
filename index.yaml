@@ -3,7 +3,7 @@ entries:
   echosec:
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.561186554Z"
+    created: "2025-06-10T09:50:22.384206207Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 60d377c109e7f17db35093dd027d29aedf05a621d1071c9415e21506b30a41d8
     icon: https://jnnkrdb.github.io/helm/icons/echosec.ico
@@ -14,7 +14,7 @@ entries:
     version: 0.1.0+61
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.563571797Z"
+    created: "2025-06-10T09:50:22.385388154Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: dff1826ed87095604d7842837d2e9aa7abc4116dbc0603103347830211fedbf7
     icon: https://jnnkrdb.github.io/helm/icons/echosec.ico
@@ -25,7 +25,7 @@ entries:
     version: 0.1.0
   - apiVersion: v2
     appVersion: dev
-    created: "2025-06-10T09:45:06.563044595Z"
+    created: "2025-06-10T09:50:22.385146528Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: c43fd52bb63113beab8b548dfb18d46b94fd2423e59b96e77937df91f8b42b8e
     name: echosec
@@ -35,7 +35,7 @@ entries:
     version: 0.1.0-alpha.58
   - apiVersion: v2
     appVersion: dev
-    created: "2025-06-10T09:45:06.562605057Z"
+    created: "2025-06-10T09:50:22.384925703Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 2173df5ee5fa5f34902b881059b801ad81167b50f7a89a0714afab76d361a9b2
     name: echosec
@@ -45,7 +45,7 @@ entries:
     version: 0.1.0-alpha.57
   - apiVersion: v2
     appVersion: dev
-    created: "2025-06-10T09:45:06.562155659Z"
+    created: "2025-06-10T09:50:22.38468551Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: c7c71f0a11c40776dccc4c191b0a4180f09130cee9de07c0c47c82f2f252bc57
     name: echosec
@@ -55,7 +55,7 @@ entries:
     version: 0.1.0-alpha.56
   - apiVersion: v2
     appVersion: dev
-    created: "2025-06-10T09:45:06.561727753Z"
+    created: "2025-06-10T09:50:22.384449325Z"
     description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
     digest: 45548224a3acae8b46b1284ed8c41cb3ab0cef72dfe342917d3ffc090db8607a
     name: echosec
@@ -66,7 +66,7 @@ entries:
   gokv:
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.564092678Z"
+    created: "2025-06-10T09:50:22.385680096Z"
     description: Deploy GoKV Key Value Store.
     digest: e1dd8b840f4f9d1d98206ab29a879309eb15770ce578d45a94dae90d7cbe0fa1
     home: https://github.com/jnnkrdb/gokv
@@ -80,7 +80,7 @@ entries:
     version: 0.1.0+10
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.564581919Z"
+    created: "2025-06-10T09:50:22.385950406Z"
     description: Deploy GoKV Key Value Store.
     digest: 60b5787685a9b370dec5829b62429c9722bb1c91b018ec6658175d3d03d883f9
     home: https://github.com/jnnkrdb/gokv
@@ -94,7 +94,7 @@ entries:
     version: 0.1.0+12
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.565034322Z"
+    created: "2025-06-10T09:50:22.386212542Z"
     description: Deploy GoKV Key Value Store.
     digest: 781568061cb8cdae41d18be91945df4ace5535e749ac6de821c98977b6b737d9
     home: https://github.com/jnnkrdb/gokv
@@ -108,7 +108,7 @@ entries:
     version: 0.1.0+13
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.565541317Z"
+    created: "2025-06-10T09:50:22.386449458Z"
     description: Deploy GoKV Key Value Store.
     digest: 5ca490ba03f8c9ea0c63ec5cd1602be35c371c8ec8e9b9abf1c87c4482e61bd5
     home: https://github.com/jnnkrdb/gokv
@@ -122,7 +122,7 @@ entries:
     version: 0.1.0+14
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.566048421Z"
+    created: "2025-06-10T09:50:22.386685262Z"
     description: Deploy GoKV Key Value Store.
     digest: 25d3cbe6288b461b513805e8a2ce04a3cd67583f16d8c71b1efce4eafd772543
     home: https://github.com/jnnkrdb/gokv
@@ -136,7 +136,7 @@ entries:
     version: 0.1.0+16
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.566546559Z"
+    created: "2025-06-10T09:50:22.386948268Z"
     description: Deploy GoKV Key Value Store.
     digest: 4cc08667c0aba2dc38017137206bad12c3be4ee19b7ee07d558281a21922fe6c
     home: https://github.com/jnnkrdb/gokv
@@ -150,7 +150,7 @@ entries:
     version: 0.1.0+17
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.567048885Z"
+    created: "2025-06-10T09:50:22.38718768Z"
     description: Deploy GoKV Key Value Store.
     digest: 7f8a6c13b5201f2724e50d38a66b8335b5a6e35edd17fe691a79f96867747672
     home: https://github.com/jnnkrdb/gokv
@@ -164,7 +164,7 @@ entries:
     version: 0.1.0+18
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.567533838Z"
+    created: "2025-06-10T09:50:22.387893379Z"
     description: Deploy GoKV Key Value Store.
     digest: 62de9d50dda731db34e00b65cbebd20fac66ed4c84de14d9906324f56e5f245c
     home: https://github.com/jnnkrdb/gokv
@@ -178,7 +178,7 @@ entries:
     version: 0.1.0+19
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.568016818Z"
+    created: "2025-06-10T09:50:22.388531368Z"
     description: Deploy GoKV Key Value Store.
     digest: 25e3badd0292bdc9a2a0e8e457e62ca67e38f36ec5a4c8ab51c1ded09c566013
     home: https://github.com/jnnkrdb/gokv
@@ -192,7 +192,21 @@ entries:
     version: 0.1.0+20
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.568393399Z"
+    created: "2025-06-10T09:50:22.388817379Z"
+    description: Deploy GoKV Key Value Store.
+    digest: bbb6b1dddf1e2c04f835ceb5682db6a7cdea3175cb96fbf54710b2b9ad4473e3
+    home: https://github.com/jnnkrdb/gokv
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - name: Jannek
+    name: gokv
+    type: application
+    urls:
+    - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+21.tgz
+    version: 0.1.0+21
+  - apiVersion: v2
+    appVersion: master
+    created: "2025-06-10T09:50:22.389037814Z"
     description: Deploy GoKV Key Value Store.
     digest: b1b02c431c845c07bf313ce2d2002e0706742975cf88f617eaee2d43f3bfc691
     name: gokv
@@ -202,7 +216,7 @@ entries:
     version: 0.1.0+7
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.568879134Z"
+    created: "2025-06-10T09:50:22.389314407Z"
     description: Deploy GoKV Key Value Store.
     digest: a755c0c499f80fa93232c1571bbc80c94564e111c2576f2db05b6018ea758427
     home: https://github.com/jnnkrdb/gokv
@@ -216,7 +230,7 @@ entries:
     version: 0.1.0+8
   - apiVersion: v2
     appVersion: master
-    created: "2025-06-10T09:45:06.569347156Z"
+    created: "2025-06-10T09:50:22.389578295Z"
     description: Deploy GoKV Key Value Store.
     digest: 117f7e6d62a945b4544143dfe3597d27c1a5f72222a593d9144ee0adb11df835
     home: https://github.com/jnnkrdb/gokv
@@ -228,4 +242,4 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+9.tgz
     version: 0.1.0+9
-generated: "2025-06-10T09:45:06.555165696Z"
+generated: "2025-06-10T09:50:22.383751581Z"
