@@ -18,7 +18,7 @@ jobs:
       
       - name: OCI Login
         run: |
-          helm registry login -u "jnnkrdb" -p "${{ secrets.GHP_TOKEN }}" https://ghcr.io/jnnkrdb
+          helm registry login ghcr.io -u jnnkrdb -p "${{ secrets.GHP_TOKEN }}"
 
       - name: Push Charts
         run: |
