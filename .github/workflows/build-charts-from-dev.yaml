@@ -35,12 +35,12 @@ jobs:
 
       - name: Lint
         run: |
-          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d -exec \
+          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d \
             -exec echo 'Lint: {}' \; -exec helm lint {} --debug \;
 
       - name: Package
         run: |
-          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d -exec \
+          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d \
             -exec echo 'Package: {}' \; -exec helm package {} --destination ./charts/ \;
 
       - name: Git Upload Changes
