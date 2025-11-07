@@ -3,7 +3,7 @@ name: Recalculate Index.yaml
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'charts/**'
 
