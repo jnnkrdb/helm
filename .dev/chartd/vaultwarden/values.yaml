@@ -1,0 +1,29 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:
+  registry: docker.io
+  repository: vaultwarden/server
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
