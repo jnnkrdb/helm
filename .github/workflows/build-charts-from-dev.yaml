@@ -8,10 +8,10 @@ on:
 jobs:
   helm:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chart:
-          - .dev/argocd
+    #strategy:
+    #  matrix:
+    #    chart:
+    #      - .dev/argocd
     env:
       HELM_EXPERIMENTAL_OCI: 1 #enable OCI support
       HELM_DIR: .dev/
@@ -21,3 +21,26 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+       
+      - name: Git Config
+        run: | 
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          
+      - name: Update Dependencies
+        run: |
+          find .dev/ -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug
+
+      #- name: Lint
+      #  run: |
+      #    find ${{ matrix.chart }}/.testing -maxdepth 1 -iname '*.yaml' -type f -exec echo 'Lint - Unittest: {}' \; -exec helm lint ${{ matrix.chart }} --debug -f {} \;
+
+      #- name: Package
+      #  run: |
+      #    helm package ${{ matrix.chart }} --destination ./charts/
+
+      #- name: Git Upload Changes
+      #  run: | 
+      #    git add .
+      #    git commit -m "recalculated index: $(date +"%Y-%m-%d - %H:%M:%S")"
+      #    git push origin master

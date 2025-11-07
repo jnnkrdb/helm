@@ -1,0 +1,16 @@
+apiVersion: v2
+name: argocd
+description: ArgoCD Deployment from jnnkrdb.de
+type: application
+version: 1.0.0
+appVersion: v2.14.15
+kubeVersion: ">=1.25.0-0"
+home: https://github.com/jnnkrdb/helm
+maintainers:
+  - name: jnnkrdb 
+keywords:
+  - argocd
+  - argoproj
+  - gitops
+#dependencies:
+#  - name: 
