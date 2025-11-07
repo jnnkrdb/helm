@@ -26,14 +26,14 @@ spec:
       protocol: TCP
       targetPort: {{ .Values.service.ports.http.port }}
       port: {{ .Values.service.ports.http.port }}
-      {{- if and .Values.service.ports.http.nodePort (eq .Values.service.ports.http.type "NodePort") }}
+      {{- if and .Values.service.ports.http.nodePort (eq .Values.service.type "NodePort") }}
       nodePort: {{ .Values.service.ports.http.nodePort }}
       {{- end }}
     - name: metrics
       protocol: TCP
       targetPort: {{ .Values.service.ports.metrics.port }}
       port: {{ .Values.service.ports.metrics.port }}
-      {{- if and .Values.service.ports.metrics.nodePort (eq .Values.service.ports.metrics.type "NodePort") }}
+      {{- if and .Values.service.ports.metrics.nodePort (eq .Values.service.type "NodePort") }}
       nodePort: {{ .Values.service.ports.metrics.nodePort }}
       {{- end }}
   {{- if .Values.service.publishNotReadyAddresses }}
