@@ -30,18 +30,21 @@ jobs:
           
       - name: Update Dependencies
         run: |
-          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug \;
+          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d \
+            -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug \;
 
-      #- name: Lint
-      #  run: |
-      #    find ${{ matrix.chart }}/.testing -maxdepth 1 -iname '*.yaml' -type f -exec echo 'Lint - Unittest: {}' \; -exec helm lint ${{ matrix.chart }} --debug -f {} \;
+      - name: Lint
+        run: |
+          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d -exec \
+            -exec echo 'Lint: {}' \; -exec helm lint {} --debug \;
 
-      #- name: Package
-      #  run: |
-      #    helm package ${{ matrix.chart }} --destination ./charts/
+      - name: Package
+        run: |
+          find $HELM_DIR -mindepth 1 -maxdepth 1 -type d -exec \
+            -exec echo 'Package: {}' \; -exec helm package {} --destination ./charts/ \;
 
-      #- name: Git Upload Changes
-      #  run: | 
-      #    git add .
-      #    git commit -m "recalculated index: $(date +"%Y-%m-%d - %H:%M:%S")"
-      #    git push origin master
+      - name: Git Upload Changes
+        run: | 
+          git add .
+          git commit -m "uploaded new charts: $(date +"%Y-%m-%d - %H:%M:%S")"
+          git push origin master
