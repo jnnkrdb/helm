@@ -28,9 +28,13 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           
+      - name: Change Dir
+        run: |
+          cd $HELM_DIR
+
       - name: Update Dependencies
         run: |
-          find .dev/ -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug \;
+          find . -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug \;
 
       #- name: Lint
       #  run: |
