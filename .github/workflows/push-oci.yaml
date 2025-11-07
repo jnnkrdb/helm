@@ -1,0 +1,25 @@
+name: PUSH OCI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+
+jobs:
+  push-oci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: OCI Login
+        run: |
+          helm registry login -u "jnnkrdb" -p "${ secrets.GHP_TOKEN }" https://ghcr.io/jnnkrdb/helm
+
+      - name: Push Charts
+        run: |
+          find ./charts/ -iname '*.tgz' -exec echo "File is {}" \;
