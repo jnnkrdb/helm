@@ -49,3 +49,4 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.REPO_TOKEN }}@github.com/${{ github.repository }}
           git commit -m "uploaded new charts: $(date +"%Y-%m-%d - %H:%M:%S")"
           git push origin master
+          
