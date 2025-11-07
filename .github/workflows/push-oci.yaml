@@ -1,4 +1,4 @@
-name: PUSH OCI
+name: Push OCI
 
 on:
   push:
