@@ -1,0 +1,9 @@
+apiVersion: v2
+name: redis
+type: application
+version: 0.0.1
+appVersion: 7.0.15-alpine
+dependencies:
+  - name: common
+    repository: "file://../../../../common"
+    version: '^1'

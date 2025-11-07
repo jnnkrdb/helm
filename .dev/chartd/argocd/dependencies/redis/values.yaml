@@ -1,0 +1,126 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+replicaCount: 1
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:    
+  registry: docker.io
+  repository: redis
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+#--------------------------------------------------------------------------------------------------
+# POD CONFIGURATION
+pod:
+  labels: {}
+  annotations: {}
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                argocd.deployment/type: redis
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/part-of: argocd
+            topologyKey: kubernetes.io/hostname
+          weight: 5
+  securityContext: 
+    runAsNonRoot: true
+    runAsUser: 999
+    seccompProfile:
+      type: RuntimeDefault
+  nodeSelector: 
+    kubernetes.io/os: linux
+  tolerations: []
+  priorityClassName: ""
+  schedulerName:
+  initContainers: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  sidecarContainers: []
+  terminationGracePeriodSeconds: 
+  extraEnvs: []
+  extraEnvFrom: []
+  containers: 
+    redis:
+      command: []
+      args: 
+        - --save
+        - ""
+        - --appendonly
+        - "no"
+        - --requirepass $(REDIS_PASSWORD)
+      workingDir: ""
+      resources: 
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 250m
+          memory: 128Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+      extraEnvs: []
+      extraEnvFrom: []
+      extraVolumeMounts: []
+      healthz: true
+      
+#--------------------------------------------------------------------------------------------------
+# SERVICE CONFIGURATION
+service:
+  annotations: {}
+  labels: {}
+  type: ClusterIP
+  clusterIP:
+  ports:
+    tcp: 
+      port: 6379
+      nodePort:
+      hostPort:
+  publishNotReadyAddresses: false
+  ipFamilyPolicy: # SingleStack
+  ipFamilies:
+
+#--------------------------------------------------------------------------------------------------
+# POD DISRUPTION POLICY CONFIGURATION
+pdb: 
+  enabled: true
+  annotations: {}
+  labels: {}
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  minAvailable: 1
+  maxUnavailable: 
+
+#--------------------------------------------------------------------------------------------------
+# REDIS CONFIGURATION
+redis: 
+  auth: 

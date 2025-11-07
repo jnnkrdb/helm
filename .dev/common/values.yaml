@@ -1,0 +1,16 @@
+#--------------------------------------------------------------------------------------------------
+# DEFAULT GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy:
+  imageRegistry:
+  storageClass:
+  ingressClassName:
+  extraDeploy: []
+
+  annotations: {}
+  labels: {}
+
+fullnameOverride: 
+
+nameOverride: 

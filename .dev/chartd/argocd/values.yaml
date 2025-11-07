@@ -1,0 +1,122 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:
+  registry: quay.io
+  repository: argoproj/argocd
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+#--------------------------------------------------------------------------------------------------
+# APPLICATION CONTROLLER CONFIGURATION
+#applicationcontroller:
+
+#--------------------------------------------------------------------------------------------------
+# APPLICATION SET CONTROLLER CONFIGURATION
+#applicationsetcontroller:
+
+#--------------------------------------------------------------------------------------------------
+# REPO SERVER CONFIGURATION
+#reposerver:
+
+#--------------------------------------------------------------------------------------------------
+# SERVER CONFIGURATION
+#server:
+
+#--------------------------------------------------------------------------------------------------
+# DEXIDP CONFIGURATION
+#dexidp:
+
+#--------------------------------------------------------------------------------------------------
+# REDIS CONFIGURATION
+#redis:
+
+#--------------------------------------------------------------------------------------------------
+# NOTIFICATIONS CONTROLLER CONFIGURATION
+notificationscontroller:
+  enabled: false
+
+#--------------------------------------------------------------------------------------------------
+# ARGOCD CONFIGURATION
+argocd:
+  redis: 
+    password: ""
+
+  configs:
+    # This key contains the data of the argocd-cm ConfigMap.
+    general:
+      users.anonymous.enabled: "false"
+      users.session.duration: "24h"
+      policy.default: "role:unauthenticated"
+      url: "https://argocd.example.com"
+      application.instanceLabelKey: "argocd.argoproj.io/jnnkrdb.de"
+      application.resourceTrackingMethod: "annotation+label"
+      installationID: "jnnkrdb.de/default"
+      dex.config: | 
+        connectors: []
+
+    # This key contains the data of the argocd_cmd_params_cm ConfigMap. https://argo-cd.readthedocs.io/en/stable/operator-manual/argocd-cmd-params-cm-yaml/
+    commandParams:
+      repo.server: |
+        {{- include "reposerver.fullname" (index .Subcharts "reposerver") }}:{{ .Values.reposerver.service.ports.http.port -}}
+      redis.server: |
+        {{- include "redis.fullname" (index .Subcharts "redis") }}:{{ .Values.redis.service.ports.tcp.port -}}
+      server.dex.server: |
+        {{- include "dexidp.fullname" (index .Subcharts "dexidp") }}:{{ .Values.dexidp.service.ports.http.port -}}
+      server.insecure: "true"
+
+    # This key contains the data of the argocd-tls-certs-cm ConfigMap.
+    tlscerts: {}
+
+    # This key contains the data of the argocd-rbac-cm ConfigMap.
+    rbac: 
+      policy.default: role:admin
+      
+    # This key contains the data of the gpg-keys-cm ConfigMap.
+    gpg: {} 
+
+    # This key contains a list of string. These strings are the public knownhost strings.
+    knownhosts: []
+
+  # This section is used to deploy static projects for argocd to handle.
+  appprojects: []
+    #- name: default
+    #  spec:
+    #    sourceRepos: []
+    #    sourceNamespaces: []
+    #    destinations: []
+    #    namespaceResourceBlacklist:
+    #    - group: '*'
+    #      kind: '*'
+  repos: []
+    #- name: repo
+    #  stringData: 
+    #    enableOCI: "true"
+    #    name: "name"
+    #    type: helm
+    #    project: default
+    #    username: "username"
+    #    url: "url"
+    #  data: 
+    #    password: "password/base64"

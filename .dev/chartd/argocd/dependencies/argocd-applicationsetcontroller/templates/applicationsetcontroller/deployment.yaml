@@ -1,0 +1,334 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "applicationsetcontroller.fullname" . }}
+  labels:
+    app.kubernetes.io/component: applicationset-controller
+    {{- include "applicationsetcontroller.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      {{- include "applicationsetcontroller.selectorLabels" . | nindent 6 }}
+      argocd.deployment/type: applicationset-controller
+  template:
+    metadata:
+      annotations:
+        {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pod.annotations) ) | nindent 8 }}
+        {{/* Adding checksums for all configs, because the apps use all configs... */}}
+        checksum/argocd-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-cmd-params-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cmd-params-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-gpg-keys-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-gpg-keys-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-rbac-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-rbac-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-secret: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-secret").data | toString | sha256sum | quote }}
+        checksum/argocd-ssh-known-hosts-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-ssh-known-hosts-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-tls-certs-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-tls-certs-cm").data | toString | sha256sum | quote }}
+      labels:
+        {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pod.labels) ) | nindent 8 }}
+        {{- include "applicationsetcontroller.selectorLabels" . | nindent 8 }}
+        argocd.deployment/type: applicationset-controller
+    spec:
+      serviceAccountName: sa-{{ include "applicationsetcontroller.fullname" . }}
+      {{- include "common.images.pullSecrets" ( dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.securityContext }}
+      securityContext:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}   
+      {{- with .Values.pod.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.pod.initContainers }}
+      initContainers:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- with (concat .Values.pod.extraVolumes .Values.global.extraVolumes) }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: ssh-known-hosts
+          configMap:
+            name:  argocd-ssh-known-hosts-cm
+        - name: tls-certs
+          configMap:
+            name: argocd-tls-certs-cm
+        - name: gpg-keys
+          configMap:
+            name:  argocd-gpg-keys-cm
+        - name: gpg-keyring
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: repo-server-tls
+          secret:
+            secretName: argocd-repo-server-tls
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+              - key: ca.crt
+                path: ca.crt
+            optional: true      
+      containers:
+        {{- with .Values.pod.sidecarContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: applicationsetcontroller
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.applicationsetcontroller.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationsetcontroller.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationsetcontroller.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationsetcontroller.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationsetcontroller.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: webhook
+              containerPort: {{ .Values.service.ports.webhook.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.webhook.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+            - name: metrics
+              containerPort: {{ .Values.service.ports.metrics.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.metrics.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.applicationsetcontroller.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: ssh-known-hosts
+              mountPath: /app/config/ssh
+            - name: tls-certs
+              mountPath: /app/config/tls
+            - name: gpg-keys
+              mountPath: /app/config/gpg/source
+            - name: gpg-keyring
+              mountPath: /app/config/gpg/keys
+            - name: tmp
+              mountPath: /tmp
+            - name: repo-server-tls
+              mountPath: /app/config/reposerver/tls
+          {{- with (concat .Values.pod.containers.applicationsetcontroller.extraEnvFrom .Values.pod.extraEnvFrom) }}
+          envFrom:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            {{- with (concat .Values.pod.containers.applicationsetcontroller.extraEnvs .Values.pod.extraEnvs) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ARGOCD_GIT_MODULES_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.git.submodule
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_GLOBAL_PRESERVED_ANNOTATIONS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.global.preserved.annotations
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_GLOBAL_PRESERVED_LABELS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.global.preserved.labels
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_LEADER_ELECTION
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.leader.election
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REPO_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  key: repo.server
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_POLICY
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.policy
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_POLICY_OVERRIDE
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.policy.override
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.debug
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.log.format
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.log.level
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.dryrun
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_PROGRESSIVE_SYNCS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.progressive.syncs
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_TOKENREF_STRICT_MODE
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.tokenref.strict.mode
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_NEW_GIT_FILE_GLOBBING
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.new.git.file.globbing
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REPO_SERVER_PLAINTEXT
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.repo.server.plaintext
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REPO_SERVER_STRICT_TLS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.repo.server.strict.tls
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REPO_SERVER_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.repo.server.timeout.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_CONCURRENT_RECONCILIATIONS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.concurrent.reconciliations.max
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.namespaces
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_SCM_ROOT_CA_PATH
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.scm.root.ca.path
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ALLOWED_SCM_PROVIDERS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.allowed.scm.providers
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_SCM_PROVIDERS
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.scm.providers
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_WEBHOOK_PARALLELISM_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.webhook.parallelism.limit
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REQUEUE_AFTER
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.requeue.after
+                  name:  argocd-cmd-params-cm
+                  optional: true
+          {{- if .Values.pod.containers.applicationsetcontroller.healthz }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}

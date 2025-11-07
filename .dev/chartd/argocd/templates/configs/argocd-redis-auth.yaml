@@ -1,0 +1,17 @@
+{{- if not (lookup "v1" "Secret" .Release.Namespace ( printf "%s-redis-auth" .Release.Name | quote )) }}
+--- # --------------------------------------------------------------------------------- Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-redis-auth
+  labels:
+    app.kubernetes.io/component: redis
+    {{- include "argocd.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: "keep"
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+type: Opaque
+data:
+  REDIS_PASSWORD: {{ (randAlphaNum 32) | b64enc | quote }}
+{{- end }}

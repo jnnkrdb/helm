@@ -1,0 +1,162 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "redis.fullname" . }}
+  labels:
+    app.kubernetes.io/component: redis
+    {{- include "redis.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      {{- include "redis.selectorLabels" . | nindent 6 }}
+      argocd.deployment/type: redis
+  template:
+    metadata:
+      annotations:
+        {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pod.annotations) ) | nindent 8 }}
+        {{/* Adding checksums for all configs, because the apps use all configs... */}}
+        checksum/argocd-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-cmd-params-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cmd-params-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-gpg-keys-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-gpg-keys-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-rbac-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-rbac-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-secret: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-secret").data | toString | sha256sum | quote }}
+        checksum/argocd-ssh-known-hosts-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-ssh-known-hosts-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-tls-certs-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-tls-certs-cm").data | toString | sha256sum | quote }}
+      labels:
+        {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pod.labels) ) | nindent 8 }}
+        {{- include "redis.selectorLabels" . | nindent 8 }}
+        argocd.deployment/type: redis
+    spec:
+      serviceAccountName: sa-{{ include "redis.fullname" . }}
+      {{- include "common.images.pullSecrets" ( dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.securityContext }}
+      securityContext:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}   
+      {{- with .Values.pod.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.pod.initContainers }}
+      initContainers:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- with (concat .Values.pod.extraVolumes .Values.global.extraVolumes) }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name:  scripts
+          configMap:
+            name:  {{ include "redis.fullname" . }}-script
+            defaultMode: 0777
+            optional: false
+            items:
+              - key: healthz.sh
+                path: healthz.sh
+      containers:
+        {{- with .Values.pod.sidecarContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: redis
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.redis.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.redis.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.redis.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.redis.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.redis.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: tcp
+              containerPort: {{ .Values.service.ports.tcp.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.tcp.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.redis.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: scripts
+              mountPath: /_scripts          
+          envFrom:
+            {{- with (concat .Values.pod.containers.redis.extraEnvFrom .Values.pod.extraEnvFrom) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - secretRef:
+                name: {{ .Release.Name }}-redis-auth
+          {{- with (concat .Values.pod.containers.redis.extraEnvs .Values.pod.extraEnvs) }}
+          env:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.pod.containers.redis.healthz }}
+          startupProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /_scripts/healthz.sh
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /_scripts/healthz.sh
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - /_scripts/healthz.sh
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}

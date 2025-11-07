@@ -1,0 +1,239 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dexidp.fullname" . }}
+  labels:
+    app.kubernetes.io/component: dexidp
+    {{- include "dexidp.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      {{- include "dexidp.selectorLabels" . | nindent 6 }}
+      argocd.deployment/type: dexidp
+  template:
+    metadata:
+      annotations:
+        {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pod.annotations) ) | nindent 8 }}
+        {{/* Adding checksums for all configs, because the apps use all configs... */}}
+        checksum/argocd-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-cmd-params-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cmd-params-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-gpg-keys-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-gpg-keys-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-rbac-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-rbac-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-secret: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-secret").data | toString | sha256sum | quote }}
+        checksum/argocd-ssh-known-hosts-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-ssh-known-hosts-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-tls-certs-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-tls-certs-cm").data | toString | sha256sum | quote }}
+      labels:
+        {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pod.labels) ) | nindent 8 }}
+        {{- include "dexidp.selectorLabels" . | nindent 8 }}
+        argocd.deployment/type: dexidp
+    spec:
+      serviceAccountName: sa-{{ include "dexidp.fullname" . }}
+      {{- include "common.images.pullSecrets" ( dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.securityContext }}
+      securityContext:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}   
+      {{- with .Values.pod.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      volumes:
+        {{- with (concat .Values.pod.extraVolumes .Values.global.extraVolumes) }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: static-files
+          emptyDir: {}          
+        - name: dexconfig
+          emptyDir: {}          
+        - name: dextls
+          secret:
+            secretName: argocd-dex-server-tls
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+              - key: ca.crt
+                path: ca.crt
+            optional: true
+      initContainers:
+        {{- with .Values.pod.initContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: copyutil
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.argocd.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.argocd.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.copyutil.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.copyutil.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.copyutil.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.copyutil.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.copyutil.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with (concat .Values.pod.containers.copyutil.extraEnvFrom .Values.pod.extraEnvFrom) }}
+          envFrom:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with (concat .Values.pod.containers.copyutil.extraEnvs .Values.pod.extraEnvs) }}
+          env:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.copyutil.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: static-files
+              mountPath: /shared
+            - name: dexconfig
+              mountPath: /tmp
+      containers:
+        {{- with .Values.pod.sidecarContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: dexidp
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.dexidp.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.dexidp.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.dexidp.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.dexidp.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.dexidp.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.ports.http.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.http.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+            - name: grpc
+              containerPort: {{ .Values.service.ports.grpc.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.grpc.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+            - name: metrics
+              containerPort: {{ .Values.service.ports.metrics.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.metrics.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.dexidp.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: static-files
+              mountPath: /shared
+            - name: dexconfig
+              mountPath: /tmp
+            - name: dextls
+              mountPath: /tls
+          {{- with (concat .Values.pod.containers.dexidp.extraEnvFrom .Values.pod.extraEnvFrom) }}
+          envFrom:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            {{- with (concat .Values.pod.containers.dexidp.extraEnvs .Values.pod.extraEnvs) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ARGOCD_DEX_SERVER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: dexserver.log.format
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_DEX_SERVER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: dexserver.log.level
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_DEX_SERVER_DISABLE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  key: dexserver.disable.tls
+                  name:  argocd-cmd-params-cm
+                  optional: true
+          {{- if .Values.pod.containers.dexidp.healthz }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}

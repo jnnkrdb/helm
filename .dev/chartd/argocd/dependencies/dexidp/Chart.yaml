@@ -1,0 +1,9 @@
+apiVersion: v2
+name: dexidp
+type: application
+version: 0.0.1
+appVersion: v2.41.1
+dependencies:
+  - name: common
+    repository: "file://../../../../common"
+    version: '^1'

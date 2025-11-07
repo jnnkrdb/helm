@@ -1,80 +1,56 @@
 apiVersion: v1
 entries:
-  echosec:
+  argocd:
   - apiVersion: v2
-    appVersion: master
-    created: "2025-11-03T06:59:38.611923368Z"
-    description: Deploy EchoSec Operator for cluster-wide configmap and secret mirroring.
-    digest: dff1826ed87095604d7842837d2e9aa7abc4116dbc0603103347830211fedbf7
-    icon: https://jnnkrdb.github.io/helm/icons/echosec.ico
-    name: echosec
-    type: application
-    urls:
-    - https://jnnkrdb.github.io/helm/charts/echosec-0.1.0.tgz
-    version: 0.1.0
-  gokv:
-  - apiVersion: v2
-    appVersion: master
-    created: "2025-11-03T06:59:38.61222405Z"
-    description: Deploy GoKV Key Value Store.
-    digest: 8c65d0ea94867170d74993691924b754db0e76f7ffc9adba6434a292f4399839
-    home: https://github.com/jnnkrdb/gokv
+    appVersion: v2.14.15
+    created: "2025-11-07T19:53:57.686776836+01:00"
+    dependencies:
+    - name: common
+      repository: file://../../common
+      version: ^1
+    - name: server
+      repository: file://dependencies/argocd-server
+      version: 0.0.1
+    - condition: notificationscontroller.enabled
+      name: notificationscontroller
+      repository: file://dependencies/argocd-notificationscontroller
+      version: 0.0.1
+    - name: applicationcontroller
+      repository: file://dependencies/argocd-applicationcontroller
+      version: 0.0.1
+    - name: applicationsetcontroller
+      repository: file://dependencies/argocd-applicationsetcontroller
+      version: 0.0.1
+    - name: reposerver
+      repository: file://dependencies/argocd-reposerver
+      version: 0.0.1
+    - name: redis
+      repository: file://dependencies/redis
+      version: 0.0.1
+    - name: dexidp
+      repository: file://dependencies/dexidp
+      version: 0.0.1
+    description: ArgoCD Deployment from jnnkrdb.de
+    digest: ca8c82f7c174f7adbf573bd26ea22c600ee2883a305ad4ed959883be72fc4b08
+    home: https://github.com/jnnkrdb/helm
+    keywords:
+    - argocd
+    - argoproj
+    - gitops
     kubeVersion: '>=1.25.0-0'
     maintainers:
-    - name: Jannek
-    name: gokv
+    - name: jnnkrdb
+    name: argocd
     type: application
     urls:
-    - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+38.tgz
-    version: 0.1.0+38
-  - apiVersion: v2
-    appVersion: master
-    created: "2025-11-03T06:59:38.612494223Z"
-    description: Deploy GoKV Key Value Store.
-    digest: 0c5fe03a3a751dbc2ac39333336e9f2f7c42bb04ca991bb2a419921b17dc995e
-    home: https://github.com/jnnkrdb/gokv
-    kubeVersion: '>=1.25.0-0'
-    maintainers:
-    - name: Jannek
-    name: gokv
-    type: application
-    urls:
-    - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+40.tgz
-    version: 0.1.0+40
-  - apiVersion: v2
-    appVersion: master
-    created: "2025-11-03T06:59:38.612727714Z"
-    description: Deploy GoKV Key Value Store.
-    digest: 52e71f78d2c11cc52ea72663710595b1a428b6e2165b274ca656bce2fb24f648
-    home: https://github.com/jnnkrdb/gokv
-    kubeVersion: '>=1.25.0-0'
-    maintainers:
-    - name: Jannek
-    name: gokv
-    type: application
-    urls:
-    - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+41.tgz
-    version: 0.1.0+41
-  - apiVersion: v2
-    appVersion: master
-    created: "2025-11-03T06:59:38.612959667Z"
-    description: Deploy GoKV Key Value Store.
-    digest: a6e91e4e93878ae6e2c4d92222ee8897afd54f88221d2410a9bccae148dfb728
-    home: https://github.com/jnnkrdb/gokv
-    kubeVersion: '>=1.25.0-0'
-    maintainers:
-    - name: Jannek
-    name: gokv
-    type: application
-    urls:
-    - https://jnnkrdb.github.io/helm/charts/gokv-0.1.0+42.tgz
-    version: 0.1.0+42
+    - https://jnnkrdb.github.io/helm/chart.d/argocd-1.0.0.tgz
+    version: 1.0.0
   vault:
   - annotations:
       charts.openshift.io/name: HashiCorp Vault
     apiVersion: v2
     appVersion: 1.20.4
-    created: "2025-11-03T06:59:38.615516822Z"
+    created: "2025-11-07T19:53:57.689451751+01:00"
     description: Official HashiCorp Vault Chart
     digest: fe80fae6a8838c75da9fbde1398f2c10bb4b5c31c425e559507ba99373297de2
     home: https://www.vaultproject.io
@@ -95,23 +71,23 @@ entries:
     - https://github.com/hashicorp/vault-k8s
     - https://github.com/hashicorp/vault-csi-provider
     urls:
-    - https://jnnkrdb.github.io/helm/charts/hcp-vault-0.31.0.tgz
+    - https://jnnkrdb.github.io/helm/chart.d/hcp-vault-0.31.0.tgz
     version: 0.31.0
   vault-secrets-gateway:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2025-11-03T06:59:38.616624442Z"
+    created: "2025-11-07T19:53:57.689765717+01:00"
     description: A Helm chart for Kubernetes
     digest: 3aab57cff35ddbaf155e23451f39845728c62082d0753253a16bd55679f4428c
     name: vault-secrets-gateway
     type: application
     urls:
-    - https://jnnkrdb.github.io/helm/charts/hcp-vault-secrets-gateway-0.0.2.tgz
+    - https://jnnkrdb.github.io/helm/chart.d/hcp-vault-secrets-gateway-0.0.2.tgz
     version: 0.0.2
   vault-secrets-operator:
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2025-11-03T06:59:38.619447944Z"
+    created: "2025-11-07T19:53:57.692115517+01:00"
     description: Official Vault Secrets Operator Chart
     digest: 5019344a8781114a42e125551bdd9578885f512921ba4a76fd1186c11dce02db
     kubeVersion: '>=1.21.0-0'
@@ -120,6 +96,6 @@ entries:
     - https://github.com/hashicorp/vault-secrets-operator
     type: application
     urls:
-    - https://jnnkrdb.github.io/helm/charts/hcp-vault-secrets-operator-1.0.1.tgz
+    - https://jnnkrdb.github.io/helm/chart.d/hcp-vault-secrets-operator-1.0.1.tgz
     version: 1.0.1
-generated: "2025-11-03T06:59:38.611485307Z"
+generated: "2025-11-07T19:53:57.678714109+01:00"

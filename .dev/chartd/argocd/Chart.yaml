@@ -1,0 +1,40 @@
+apiVersion: v2
+name: argocd
+description: ArgoCD Deployment from jnnkrdb.de
+type: application
+version: 1.0.0
+appVersion: v2.14.15
+kubeVersion: ">=1.25.0-0"
+home: https://github.com/jnnkrdb/helm
+maintainers:
+  - name: jnnkrdb 
+keywords:
+  - argocd
+  - argoproj
+  - gitops
+dependencies:
+  - name: common
+    repository: "file://../../common"
+    version: '^1'
+  - name: server
+    repository: "file://dependencies/argocd-server"
+    version: 0.0.1
+  - name: notificationscontroller
+    repository: "file://dependencies/argocd-notificationscontroller"
+    version: 0.0.1
+    condition: notificationscontroller.enabled
+  - name: applicationcontroller
+    repository: "file://dependencies/argocd-applicationcontroller"
+    version: 0.0.1
+  - name: applicationsetcontroller
+    repository: "file://dependencies/argocd-applicationsetcontroller"
+    version: 0.0.1
+  - name: reposerver
+    repository: "file://dependencies/argocd-reposerver"
+    version: 0.0.1
+  - name: redis
+    repository: "file://dependencies/redis"
+    version: 0.0.1
+  - name: dexidp
+    repository: "file://dependencies/dexidp"
+    version: 0.0.1

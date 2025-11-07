@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {{/* The name of the configmap has to be static, since the name of the configmap is static in the sourcecode of argocd as well... */}}
+  name:  argocd-cmd-params-cm
+  labels: {{/* Technically speaking, the config gathering is bound to this label, but you can't prevent item duplication by labels, so the name is set static. */}}
+    app.kubernetes.io/name: argocd-cmd-params-cm 
+    app.kubernetes.io/part-of: argocd
+    {{- include "argocd.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.argocd.configs.commandParams }}
+  {{- if $value }}
+  {{ $key }}: {{ tpl ($value | toString) $ | quote }}
+  {{- end }}
+  {{- end }}

@@ -1,0 +1,19 @@
+{{- if (lookup "v1" "ConfigMap" .Release.Namespace "argocd-notifications-cm") }}
+  {{- fail "An 'argocd-notifications-cm' configmap/secret does already exist. Currently it is not supported to use other configmap/secret -names than 'argocd-notifications-cm'" -}}
+{{- else }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  labels:
+    app.kubernetes.io/component: notifications-controller
+    {{- include "notificationscontroller.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+{{- with .Values.notification.config }}
+data:
+  {{- . | toYaml | nindent 2 }}
+{{- end }}
+{{- end }}

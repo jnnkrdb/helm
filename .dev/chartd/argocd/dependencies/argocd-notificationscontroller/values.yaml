@@ -1,0 +1,112 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+replicaCount: 1
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:
+  registry: quay.io
+  repository: argoproj/argocd
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+#--------------------------------------------------------------------------------------------------
+# POD CONFIGURATION
+pod:
+  labels: {}
+  annotations: {}
+  affinity: {}
+  securityContext: {}
+  nodeSelector: 
+    kubernetes.io/os: linux
+  tolerations: []
+  priorityClassName: ""
+  schedulerName:
+  initContainers: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  sidecarContainers: []
+  terminationGracePeriodSeconds: 
+  extraEnvs: []
+  extraEnvFrom: []
+  containers: 
+    notificationscontroller:
+      command: []
+      args: 
+        - /usr/local/bin/argocd-notifications
+      workingDir: /app
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      securityContext: 
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+      extraEnvs: []
+      extraEnvFrom: []
+      extraVolumeMounts: []
+      healthz: true
+      
+#--------------------------------------------------------------------------------------------------
+# SERVICE CONFIGURATION
+service:
+  annotations: {}
+  labels: {}
+  type: ClusterIP
+  clusterIP:
+  ports:
+    metrics: 
+      port: 9001
+      nodePort:
+      hostPort:
+  publishNotReadyAddresses: false
+  ipFamilyPolicy: # SingleStack
+  ipFamilies:
+
+#--------------------------------------------------------------------------------------------------
+# POD DISRUPTION POLICY CONFIGURATION
+pdb: 
+  enabled: true
+  annotations: {}
+  labels: {}
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  minAvailable: 1
+  maxUnavailable: 
+
+#--------------------------------------------------------------------------------------------------
+# NOTIFICATION CONFIGURATION
+# This key contains configurations for the notification service of ArgoCD.
+notification: 
+  # Uncomment the following keys and fill in with the required information.
+  # (They will be inserted into the argocd-notifications-secret Secret)
+  auth: {}
+    #email-username: ""
+    #email-password: ""
+  # Enter the notification connection configs here.
+  # (They will be inserted into the argocd-notifications-cm ConfigMap)
+  config: {}

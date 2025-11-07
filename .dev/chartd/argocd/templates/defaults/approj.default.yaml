@@ -1,0 +1,17 @@
+{{- $labels1 := include "argocd.labels" . -}}
+{{- $labels2 := include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) -}}
+{{- $annotations := include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) -}}
+{{- range $proj := .Values.argocd.appprojects }}
+--- # --------------------------------- {{ $proj.name }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $proj.name | quote }}
+  labels:
+    {{- $labels1 | nindent 4 }}
+    {{- $labels2 | nindent 4 }}
+  annotations:
+    {{- $annotations | nindent 4 }}
+spec:
+  {{- $proj.spec | toYaml | nindent 2 }}
+{{- end }}

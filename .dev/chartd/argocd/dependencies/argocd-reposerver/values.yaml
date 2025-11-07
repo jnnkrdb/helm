@@ -1,0 +1,141 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+replicaCount: 1
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:
+  registry: quay.io
+  repository: argoproj/argocd
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+#--------------------------------------------------------------------------------------------------
+# POD CONFIGURATION
+pod:
+  labels: {}
+  annotations: {}
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                argocd.deployment/type: repo-server
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/part-of: argocd
+            topologyKey: kubernetes.io/hostname
+          weight: 5
+  securityContext: {}
+  nodeSelector: 
+    kubernetes.io/os: linux
+  tolerations: []
+  priorityClassName: ""
+  schedulerName:
+  initContainers: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  sidecarContainers: []
+  terminationGracePeriodSeconds: 
+  extraEnvs: []
+  extraEnvFrom: []
+  containers: 
+    copyutil:
+      command: 
+        - /bin/cp
+      args: 
+        - -n
+        - /usr/local/bin/argocd
+        - /var/run/argocd/argocd-cmp-server
+      workingDir: ""
+      resources: {}
+      securityContext: 
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      extraEnvs: []
+      extraEnvFrom: []
+      extraVolumeMounts: []
+    reposerver:
+      command: []
+      args: 
+        - /usr/local/bin/argocd-repo-server
+      workingDir: ""
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 1024Mi
+        requests:
+          cpu: 200m
+          memory: 1024Mi
+      securityContext: 
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      extraEnvs: []
+      extraEnvFrom: []
+      extraVolumeMounts: []
+      healthz: true
+      
+#--------------------------------------------------------------------------------------------------
+# SERVICE CONFIGURATION
+service:
+  annotations: {}
+  labels: {}
+  type: ClusterIP
+  clusterIP:
+  ports:
+    http: 
+      port: 8081
+      nodePort:
+      hostPort:
+    metrics: 
+      port: 8084
+      nodePort:
+      hostPort:
+  publishNotReadyAddresses: false
+  ipFamilyPolicy: # SingleStack
+  ipFamilies:
+
+#--------------------------------------------------------------------------------------------------
+# POD DISRUPTION POLICY CONFIGURATION
+pdb: 
+  enabled: true
+  annotations: {}
+  labels: {}
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  minAvailable: 1
+  maxUnavailable: 

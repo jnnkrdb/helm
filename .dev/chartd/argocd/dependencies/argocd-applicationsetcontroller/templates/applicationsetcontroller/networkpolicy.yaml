@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "applicationsetcontroller.fullname" . }}
+  labels:
+    app.kubernetes.io/component: applicationset-controller
+    {{- include "applicationsetcontroller.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: {{ .Values.service.ports.metrics.port }}
+          protocol: TCP
+        - port: {{ .Values.service.ports.webhook.port }}
+          protocol: TCP
+  podSelector:
+    matchLabels:
+      argocd.deployment/type: applicationset-controller
+  policyTypes:
+    - Ingress

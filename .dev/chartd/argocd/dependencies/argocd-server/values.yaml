@@ -1,0 +1,132 @@
+#--------------------------------------------------------------------------------------------------
+# GLOBAL CONFIGURATION
+global:
+  imagePullSecrets: []
+  imagePullPolicy: 
+  imageRegistry:
+  storageClass: 
+  ingressClassName: 
+  labels: {}
+  annotations: {}
+  extraVolumes: []
+  extraVolumeMounts: []
+
+#--------------------------------------------------------------------------------------------------
+# GENERAL CONFIGURATION
+fullnameOverride: 
+nameOverride: 
+labels: {}
+annotations: {}
+replicaCount: 1
+
+#--------------------------------------------------------------------------------------------------
+# IMAGE CONFIGURATION
+image:
+  registry: quay.io
+  repository: argoproj/argocd
+  tag:
+  digest:
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+#--------------------------------------------------------------------------------------------------
+# POD CONFIGURATION
+pod:
+  labels: {}
+  annotations: {}
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                argocd.deployment/type: server
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/part-of: argocd
+            topologyKey: kubernetes.io/hostname
+          weight: 5
+  securityContext: {}
+  nodeSelector: 
+    kubernetes.io/os: linux
+  tolerations: []
+  priorityClassName: ""
+  schedulerName:
+  initContainers: []
+  extraVolumes: []
+  extraVolumeMounts: []
+  sidecarContainers: []
+  terminationGracePeriodSeconds: 
+  extraEnvs: []
+  extraEnvFrom: []
+  containers:
+    server:
+      command: []
+      args: 
+        - /usr/local/bin/argocd-server
+      workingDir: ""
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      securityContext: 
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      extraEnvs: []
+      extraEnvFrom: []
+      extraVolumeMounts: []
+      healthz: true
+      
+#--------------------------------------------------------------------------------------------------
+# SERVICE CONFIGURATION
+service:
+  annotations: {}
+  labels: {}
+  type: ClusterIP
+  clusterIP:
+  ports:
+    http: 
+      port: 8080
+      nodePort:
+      hostPort:
+    metrics: 
+      port: 8083
+      nodePort:
+      hostPort:
+  publishNotReadyAddresses: false
+  ipFamilyPolicy: # SingleStack
+  ipFamilies:
+
+#--------------------------------------------------------------------------------------------------
+# INGRESS CONFIGURATION
+ingress:
+  enabled: false
+  className: ""
+  labels: {}
+  annotations: {}
+  host: ""
+  tls:
+    enabled: false
+    secretName: ""
+
+#--------------------------------------------------------------------------------------------------
+# POD DISRUPTION POLICY CONFIGURATION
+pdb: 
+  enabled: true
+  annotations: {}
+  labels: {}
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  minAvailable: 1
+  maxUnavailable: 

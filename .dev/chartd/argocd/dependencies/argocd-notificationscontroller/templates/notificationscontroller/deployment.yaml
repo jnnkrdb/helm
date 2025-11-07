@@ -1,0 +1,196 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "notificationscontroller.fullname" . }}
+  labels:
+    app.kubernetes.io/component: notifications-controller
+    {{- include "notificationscontroller.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  minReadySeconds: 10
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "notificationscontroller.selectorLabels" . | nindent 6 }}
+      argocd.deployment/type: notifications-controller
+  template:
+    metadata:
+      annotations:
+        {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pod.annotations) ) | nindent 8 }}
+        {{/* Adding checksums for all configs, because the apps use all configs... */}}
+        checksum/argocd-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-cmd-params-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cmd-params-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-gpg-keys-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-gpg-keys-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-rbac-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-rbac-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-secret: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-secret").data | toString | sha256sum | quote }}
+        checksum/argocd-ssh-known-hosts-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-ssh-known-hosts-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-tls-certs-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-tls-certs-cm").data | toString | sha256sum | quote }}
+      labels:
+        argocd.deployment/type: notifications-controller
+        {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pod.labels) ) | nindent 8 }}
+        {{- include "notificationscontroller.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: sa-{{ include "notificationscontroller.fullname" . }}
+      {{- include "common.images.pullSecrets" ( dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.securityContext }}
+      securityContext:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}   
+      {{- with .Values.pod.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.pod.initContainers }}
+      initContainers:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- with (concat .Values.pod.extraVolumes .Values.global.extraVolumes) }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: tls-certs
+          configMap:
+            name: argocd-tls-certs-cm
+        - name: repo-server-tls
+          secret:
+            secretName: argocd-repo-server-tls
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+              - key: ca.crt
+                path: ca.crt
+            optional: true
+      containers:
+        {{- with .Values.pod.sidecarContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: notificationscontroller
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.notificationscontroller.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.notificationscontroller.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.notificationscontroller.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.notificationscontroller.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.notificationscontroller.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.service.ports.metrics.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.metrics.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.notificationscontroller.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: tls-certs
+              mountPath: /app/config/tls
+            - name: repo-server-tls
+              mountPath: /app/config/reposerver/tls
+          {{- with (concat .Values.pod.containers.notificationscontroller.extraEnvFrom .Values.pod.extraEnvFrom) }}
+          envFrom:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            {{- with (concat .Values.pod.containers.notificationscontroller.extraEnvs .Values.pod.extraEnvs) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.format
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.level
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  key: application.namespaces
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_NOTIFICATION_CONTROLLER_SELF_SERVICE_NOTIFICATION_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.selfservice.enabled
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_NOTIFICATION_CONTROLLER_REPO_SERVER_PLAINTEXT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.repo.server.plaintext
+                  name:  argocd-cmd-params-cm
+                  optional: true
+          {{- if .Values.pod.containers.notificationscontroller.healthz }}
+          startupProbe:
+            tcpSocket:
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            tcpSocket:
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}
+              

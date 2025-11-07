@@ -1,0 +1,414 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "applicationcontroller.fullname" . }}
+  labels:
+    app.kubernetes.io/component: application-controller
+    {{- include "applicationcontroller.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  minReadySeconds: 10
+  serviceName: {{ include "applicationcontroller.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "applicationcontroller.selectorLabels" . | nindent 6 }}
+      argocd.deployment/type: application-controller
+  template:
+    metadata:
+      annotations:
+        {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pod.annotations) ) | nindent 8 }}
+        {{/* Adding checksums for all configs, because the apps use all configs... */}}
+        checksum/argocd-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-cmd-params-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-cmd-params-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-gpg-keys-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-gpg-keys-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-rbac-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-rbac-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-secret: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-secret").data | toString | sha256sum | quote }}
+        checksum/argocd-ssh-known-hosts-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-ssh-known-hosts-cm").data | toString | sha256sum | quote }}
+        checksum/argocd-tls-certs-cm: {{ (lookup "v1" "ConfigMap" .Release.Name "argocd-tls-certs-cm").data | toString | sha256sum | quote }}
+      labels:
+        {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pod.labels) ) | nindent 8 }}
+        {{- include "applicationcontroller.selectorLabels" . | nindent 8 }}
+        argocd.deployment/type: application-controller
+    spec:
+      serviceAccountName: sa-{{ include "applicationcontroller.fullname" . }}
+      {{- include "common.images.pullSecrets" ( dict "images" (list .Values.image) "global" .Values.global) | nindent 6 }}
+      {{- with .Values.pod.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.securityContext }}
+      securityContext:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.pod.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.pod.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}   
+      {{- with .Values.pod.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.pod.initContainers }}
+      initContainers:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- with (concat .Values.pod.extraVolumes .Values.global.extraVolumes) }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: argocd-home
+          emptyDir: {}
+        - name: argocd-application-controller-tmp
+          emptyDir: {}
+        - name: repo-server-tls
+          secret:
+            secretName: argocd-repo-server-tls
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+              - key: ca.crt
+                path: ca.crt
+            optional: true
+        - name:  cmd-params-cm
+          configMap:
+            name:  argocd-cmd-params-cm
+            items:
+              - key: controller.profile.enabled
+                path: profiler.enabled
+            optional: true
+      containers:
+        {{- with .Values.pod.sidecarContainers }}
+        {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        - name: applicationcontroller
+          image: {{ include "common.images.image" ( dict "imageRoot" .Values.image "global" .Values.global "chart" .Chart ) }}
+          imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.image "global" .Values.global ) }}
+          {{- with .Values.pod.containers.applicationcontroller.command }}
+          command: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationcontroller.args }}
+          args: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationcontroller.securityContext }}
+          securityContext: 
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationcontroller.workingDir }}
+          workingDir: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.pod.containers.applicationcontroller.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.service.ports.metrics.port }}
+              protocol: TCP
+              {{- with .Values.service.ports.metrics.hostPort }}
+              hostPort: {{ . }}
+              {{- end }}
+          volumeMounts:
+            {{- with (concat .Values.pod.containers.applicationcontroller.extraVolumeMounts 
+                             .Values.pod.extraVolumeMounts 
+                             .Values.global.extraVolumeMounts) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: repo-server-tls
+              mountPath: /app/config/controller/tls
+            - name: argocd-home
+              mountPath: /home/argocd
+            - name:  cmd-params-cm
+              mountPath: /home/argocd/params
+            - name: argocd-application-controller-tmp
+              mountPath: /tmp
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-redis-auth
+            {{- with (concat .Values.pod.containers.applicationcontroller.extraEnvFrom .Values.pod.extraEnvFrom) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+          env:
+            {{- with (concat .Values.pod.containers.applicationcontroller.extraEnvs .Values.pod.extraEnvs) }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{/*
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: auth
+                  name: argocd-redis
+            */}}
+            - name: ARGOCD_CONTROLLER_REPLICAS
+              value: "1"
+            - name: ARGOCD_RECONCILIATION_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: timeout.reconciliation
+                  name: argocd-cm
+                  optional: true
+            - name: ARGOCD_HARD_RECONCILIATION_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: timeout.hard.reconciliation
+                  name: argocd-cm
+                  optional: true
+            - name: ARGOCD_RECONCILIATION_JITTER
+              valueFrom:
+                configMapKeyRef:
+                  key: timeout.reconciliation.jitter
+                  name: argocd-cm
+                  optional: true
+            - name: ARGOCD_REPO_ERROR_GRACE_PERIOD_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.error.grace.period.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  key: repo.server
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.timeout.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_STATUS_PROCESSORS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.status.processors
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_OPERATION_PROCESSORS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.operation.processors
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.log.format
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.log.level
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_METRICS_CACHE_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.metrics.cache.expiration
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.self.heal.timeout.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_BACKOFF_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.self.heal.backoff.timeout.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_BACKOFF_FACTOR
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.self.heal.backoff.factor
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_BACKOFF_CAP_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.self.heal.backoff.cap.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SYNC_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.sync.timeout.seconds
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_PLAINTEXT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.plaintext
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_STRICT_TLS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.strict.tls
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_PERSIST_RESOURCE_HEALTH
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.resource.health.persist
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APP_STATE_CACHE_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.app.state.cache.expiration
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: REDIS_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.server
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: REDIS_COMPRESSION
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.compression
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: REDISDB
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.db
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_DEFAULT_CACHE_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.default.cache.expiration
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.address
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_INSECURE
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.insecure
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_HEADERS
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.headers
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  key: application.namespaces
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_CONTROLLER_SHARDING_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.sharding.algorithm
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_KUBECTL_PARALLELISM_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.kubectl.parallelism.limit
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8SCLIENT_RETRY_MAX
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8sclient.retry.max
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8SCLIENT_RETRY_BASE_BACKOFF
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8sclient.retry.base.backoff
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_SERVER_SIDE_DIFF
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.diff.server.side
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_IGNORE_NORMALIZER_JQ_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.ignore.normalizer.jq.timeout
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_HYDRATOR_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: hydrator.enabled
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_CLUSTER_CACHE_BATCH_EVENTS_PROCESSING
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.cluster.cache.batch.events.processing
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_CLUSTER_CACHE_EVENTS_PROCESSING_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.cluster.cache.events.processing.interval
+                  name:  argocd-cmd-params-cm
+                  optional: true
+            - name: KUBECACHEDIR
+              value: /tmp/kubecache
+          {{- if .Values.pod.containers.applicationcontroller.healthz }}
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: metrics
+            timeoutSeconds: 1
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          {{- end }}
