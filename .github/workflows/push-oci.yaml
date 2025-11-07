@@ -24,4 +24,4 @@ jobs:
         run: |
           find ./charts/ -maxdepth 1 -iname '*.tgz' -type f \
             -exec /bin/sh -c "echo 'Uploading {}'" \\; \
-            -exec /bin/sh -c "helm push {} oci://ghcr.io/jnnkrdb/helm/"
+            -exec /bin/sh -c "helm push {} oci://ghcr.io/jnnkrdb/helm/" \\;
