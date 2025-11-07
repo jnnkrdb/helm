@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - '.dev/**'
+      - '.github/workflows/*.yaml'
 jobs:
   helm:
     runs-on: ubuntu-latest
@@ -29,7 +30,7 @@ jobs:
           
       - name: Update Dependencies
         run: |
-          find .dev/ -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug
+          find .dev/ -maxdepth 1 -type d -exec echo 'Chart-Dir - {}' \; -exec helm dependency update {} --debug \;
 
       #- name: Lint
       #  run: |

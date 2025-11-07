@@ -1,18 +1,14 @@
 name: Recalculate Index.yaml
-
 on:
   push:
     branches:
       - master
     paths:
       - 'charts/**'
-
 jobs:
   push-oci:
     runs-on: ubuntu-latest
     env:
-      #HELM_EXPERIMENTAL_OCI: 1 #enable OCI support
-      #HELM_DIR: .dev/
       HELM_URL: https://jnnkrdb.github.io/helm/
     steps:
       - name: Checkout code
@@ -26,5 +22,5 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add .
-          git commit -m "added helmchart echosec: [${{ needs.version.outputs.semver }}]  | $(date +"%Y-%m-%d - %H:%M:%S")"
-          git push
+          git commit -m "added helmchart echosec: $(date +"%Y-%m-%d - %H:%M:%S")"
+          git push origin master
