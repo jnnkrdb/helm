@@ -22,6 +22,4 @@ jobs:
 
       - name: Push Charts
         run: |
-          find ./charts/ -maxdepth 1 -iname '*.tgz' -type f \
-            -exec /bin/sh -c "echo 'Uploading {}'" \\; \
-            -exec /bin/sh -c "helm push {} oci://ghcr.io/jnnkrdb/helm/" \\;
+          find ./charts/ -maxdepth 1 -iname '*.tgz' -type f -exec echo 'Uploading {}' \; -exec helm push {} oci://ghcr.io/jnnkrdb/helm \;
