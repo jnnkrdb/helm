@@ -66,15 +66,7 @@ pod:
         requests:
           cpu: 50m
           memory: 256Mi
-      securityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-            - ALL
-        readOnlyRootFilesystem: true
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
+      securityContext: {}
       extraEnvs: []
       extraEnvFrom: []
       extraVolumeMounts: []
