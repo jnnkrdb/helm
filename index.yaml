@@ -3,7 +3,51 @@ entries:
   argocd:
   - apiVersion: v2
     appVersion: v2.14.15
-    created: "2025-11-07T19:53:57.686776836+01:00"
+    created: "2025-11-08T17:53:07.824724217Z"
+    dependencies:
+    - name: common
+      repository: file://../../common
+      version: ^1
+    - name: server
+      repository: file://dependencies/argocd-server
+      version: 0.0.1
+    - condition: notificationscontroller.enabled
+      name: notificationscontroller
+      repository: file://dependencies/argocd-notificationscontroller
+      version: 0.0.1
+    - name: applicationcontroller
+      repository: file://dependencies/argocd-applicationcontroller
+      version: 0.0.1
+    - name: applicationsetcontroller
+      repository: file://dependencies/argocd-applicationsetcontroller
+      version: 0.0.1
+    - name: reposerver
+      repository: file://dependencies/argocd-reposerver
+      version: 0.0.1
+    - name: redis
+      repository: file://dependencies/redis
+      version: 0.0.1
+    - name: dexidp
+      repository: file://dependencies/dexidp
+      version: 0.0.1
+    description: ArgoCD Deployment from jnnkrdb.de
+    digest: 3d9deb96b9a9aa2b2054be8b4ed38bbbe7f7803ec4dfbc53cff0eb32577da2ad
+    home: https://github.com/jnnkrdb/helm
+    keywords:
+    - argocd
+    - argoproj
+    - gitops
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - name: jnnkrdb
+    name: argocd
+    type: application
+    urls:
+    - https://jnnkrdb.github.io/helm/chart.d/argocd-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: v2.14.15
+    created: "2025-11-08T17:53:07.810223402Z"
     dependencies:
     - name: common
       repository: file://../../common
@@ -45,12 +89,43 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/chart.d/argocd-1.0.0.tgz
     version: 1.0.0
+  cert-manager:
+  - annotations:
+      artifacthub.io/category: security
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/prerelease: "false"
+      artifacthub.io/signKey: |
+        fingerprint: 1020CF3C033D4F35BAE1C19E1226061C665DF13E
+        url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
+    apiVersion: v2
+    appVersion: v1.19.1
+    created: "2025-11-08T17:53:07.840299977Z"
+    description: A Helm chart for cert-manager
+    digest: f72a727b1749df3521e7a65af5f18505f93b572d758841890270b150344b2b41
+    home: https://cert-manager.io
+    icon: https://raw.githubusercontent.com/cert-manager/community/4d35a69437d21b76322157e6284be4cd64e6d2b7/logo/logo-small.png
+    keywords:
+    - cert-manager
+    - kube-lego
+    - letsencrypt
+    - tls
+    kubeVersion: '>= 1.22.0-0'
+    maintainers:
+    - email: cert-manager-maintainers@googlegroups.com
+      name: cert-manager-maintainers
+      url: https://cert-manager.io
+    name: cert-manager
+    sources:
+    - https://github.com/cert-manager/cert-manager
+    urls:
+    - https://jnnkrdb.github.io/helm/chart.d/cert-manager-v1.19.1.tgz
+    version: v1.19.1
   vault:
   - annotations:
       charts.openshift.io/name: HashiCorp Vault
     apiVersion: v2
     appVersion: 1.20.4
-    created: "2025-11-07T19:53:57.689451751+01:00"
+    created: "2025-11-08T17:53:07.849069615Z"
     description: Official HashiCorp Vault Chart
     digest: fe80fae6a8838c75da9fbde1398f2c10bb4b5c31c425e559507ba99373297de2
     home: https://www.vaultproject.io
@@ -76,7 +151,7 @@ entries:
   vault-secrets-gateway:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2025-11-07T19:53:57.689765717+01:00"
+    created: "2025-11-08T17:53:07.854267848Z"
     description: A Helm chart for Kubernetes
     digest: 3aab57cff35ddbaf155e23451f39845728c62082d0753253a16bd55679f4428c
     name: vault-secrets-gateway
@@ -87,7 +162,7 @@ entries:
   vault-secrets-operator:
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2025-11-07T19:53:57.692115517+01:00"
+    created: "2025-11-08T17:53:07.86308782Z"
     description: Official Vault Secrets Operator Chart
     digest: 5019344a8781114a42e125551bdd9578885f512921ba4a76fd1186c11dce02db
     kubeVersion: '>=1.21.0-0'
@@ -98,4 +173,4 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/chart.d/hcp-vault-secrets-operator-1.0.1.tgz
     version: 1.0.1
-generated: "2025-11-07T19:53:57.678714109+01:00"
+generated: "2025-11-08T17:53:07.793773432Z"

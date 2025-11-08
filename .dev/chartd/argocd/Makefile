@@ -9,7 +9,7 @@ dep:
 	$(foreach v,$(LOCAL_DEPS_PATH),echo "$(v)" && helm dep up $(v)/;)
 	helm dep up $(CHART_PATH)/
 
-# helm testing
+# helm
 lint: dep
 	helm lint $(CHART_PATH)/
 
