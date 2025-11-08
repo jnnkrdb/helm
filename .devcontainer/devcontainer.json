@@ -3,5 +3,14 @@
   "features": {
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
     "ghcr.io/audacioustux/devcontainers/k9s:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Tim-Koehler.helm-intellisense",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "kennylong.kubernetes-yaml-formatter"
+      ]
+    }
   }
 }

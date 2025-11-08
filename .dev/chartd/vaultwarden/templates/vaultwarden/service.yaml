@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.service.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.service.annotations) ) | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if and .Values.service.clusterIP (eq .Values.service.type "ClusterIP") }}
+  clusterIP: {{ .Values.service.clusterIP }}
+  {{- end }}
+  {{- if .Values.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- with .Values.service.ipFamilies }}
+  ipFamilies:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  ports:
+    - name: http
+      protocol: TCP
+      targetPort: {{ .Values.service.ports.http.port }}
+      port: {{ .Values.service.ports.http.port }}
+      {{- if and .Values.service.ports.http.nodePort (eq .Values.service.type "NodePort") }}
+      nodePort: {{ .Values.service.ports.http.nodePort }}
+      {{- end }}
+    - name: websocket
+      protocol: TCP
+      targetPort: {{ .Values.service.ports.websocket.port }}
+      port: {{ .Values.service.ports.websocket.port }}
+      {{- if and .Values.service.ports.websocket.nodePort (eq .Values.service.type "NodePort") }}
+      nodePort: {{ .Values.service.ports.websocket.nodePort }}
+      {{- end }}
+  {{- if .Values.service.publishNotReadyAddresses }}
+  publishNotReadyAddresses: true
+  {{- end }}
+  selector:
+    {{- include "vaultwarden.selectorLabels" . | nindent 4 }}

@@ -2,10 +2,10 @@
 # GLOBAL CONFIGURATION
 global:
   imagePullSecrets: []
-  imagePullPolicy: 
+  imagePullPolicy:
   imageRegistry:
-  storageClass: 
-  ingressClassName: 
+  storageClass:
+  ingressClassName:
   labels: {}
   annotations: {}
   extraVolumes: []
@@ -13,8 +13,8 @@ global:
 
 #--------------------------------------------------------------------------------------------------
 # GENERAL CONFIGURATION
-fullnameOverride: 
-nameOverride: 
+fullnameOverride:
+nameOverride:
 labels: {}
 annotations: {}
 replicaCount: 1
@@ -34,7 +34,7 @@ image:
 pod:
   labels: {}
   annotations: {}
-  affinity: 
+  affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
         - podAffinityTerm:
@@ -50,7 +50,7 @@ pod:
             topologyKey: kubernetes.io/hostname
           weight: 5
   securityContext: {}
-  nodeSelector: 
+  nodeSelector:
     kubernetes.io/os: linux
   tolerations: []
   priorityClassName: ""
@@ -59,13 +59,13 @@ pod:
   extraVolumes: []
   extraVolumeMounts: []
   sidecarContainers: []
-  terminationGracePeriodSeconds: 
+  terminationGracePeriodSeconds:
   extraEnvs: []
   extraEnvFrom: []
   containers:
     server:
       command: []
-      args: 
+      args:
         - /usr/local/bin/argocd-server
       workingDir: ""
       resources:
@@ -75,7 +75,7 @@ pod:
         requests:
           cpu: 100m
           memory: 256Mi
-      securityContext: 
+      securityContext:
         allowPrivilegeEscalation: false
         capabilities:
           drop:
@@ -88,7 +88,7 @@ pod:
       extraEnvFrom: []
       extraVolumeMounts: []
       healthz: true
-      
+
 #--------------------------------------------------------------------------------------------------
 # SERVICE CONFIGURATION
 service:
@@ -97,17 +97,17 @@ service:
   type: ClusterIP
   clusterIP:
   ports:
-    http: 
+    http:
       port: 8080
       nodePort:
       hostPort:
-    metrics: 
+    metrics:
       port: 8083
       nodePort:
       hostPort:
   publishNotReadyAddresses: false
   ipFamilyPolicy: # SingleStack
-  ipFamilies:
+  ipFamilies: []
 
 #--------------------------------------------------------------------------------------------------
 # INGRESS CONFIGURATION
@@ -123,10 +123,10 @@ ingress:
 
 #--------------------------------------------------------------------------------------------------
 # POD DISRUPTION POLICY CONFIGURATION
-pdb: 
+pdb:
   enabled: true
   annotations: {}
   labels: {}
   unhealthyPodEvictionPolicy: AlwaysAllow
   minAvailable: 1
-  maxUnavailable: 
+  maxUnavailable:

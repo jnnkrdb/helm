@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled }}
+--- # --------------------------------------------------------------------------------- Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.ingress.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.ingress.annotations) ) | nindent 4 }}
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host | quote }}
+      {{- with .Values.ingress.tls.secretName }}
+      secretName: {{ . | quote }}
+      {{- end }}
+  {{- end }}
+  {{- include "common.ingress.className" ( dict "ing" .Values.ingress "global" .Values.global) | nindent 2 }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "vaultwarden.fullname" . }}
+                port:
+                  number: {{ .Values.service.ports.http.port }}
+          - path: /notifications/hub
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "vaultwarden.fullname" . }}
+                port:
+                  number: {{ .Values.service.ports.websocket.port }}
+{{- end }}

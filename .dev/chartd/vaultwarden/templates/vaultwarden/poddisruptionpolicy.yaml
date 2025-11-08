@@ -1,0 +1,27 @@
+{{- if .Values.pdb.enabled }}
+--- # --------------------------------------------------------------------------------- PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pdb.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pdb.annotations) ) | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vaultwarden.selectorLabels" . | nindent 6 }}
+  {{- with .Values.pdb.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  {{- if not .Values.pdb.minAvailable }}
+  {{- with .Values.pdb.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  {{- end }}
+  {{- with .Values.pdb.unhealthyPodEvictionPolicy }}
+  unhealthyPodEvictionPolicy: {{ . }}
+  {{- end }}
+{{- end }}

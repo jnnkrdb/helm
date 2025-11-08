@@ -1,0 +1,164 @@
+{{- if and .Values.backup.enabled .Values.persistence.enabled -}}
+--- # --------------------------------------------------------------------------------- backup.podDisruptionBudget
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "vaultwarden.fullname" . }}-backup
+  labels:
+    {{- include "vaultwarden.labels" . | nindent 4 }}
+    {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels) ) | nindent 4 }}
+  annotations:
+    {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations) ) | nindent 4 }}
+spec:
+  {{- with .Values.backup.cronjob.suspend }}
+  suspend: {{ . }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.schedule }}
+  schedule: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.successfulJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ . }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.failedJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ . }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.concurrencyPolicy }}
+  concurrencyPolicy: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ . }}
+  {{- end }}
+  {{- with .Values.backup.cronjob.timeZone }}
+  timeZone: {{ . }}
+  {{- end }}
+  jobTemplate:
+    spec:
+      {{- with .Values.backup.cronjob.jobTemplate.suspend }}
+      suspend: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.completions }}
+      completions: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.parallelism }}
+      parallelism: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.completionMode }}
+      completionMode: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.backoffLimitPerIndex }}
+      backoffLimitPerIndex: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.maxFailedIndexes }}
+      maxFailedIndexes: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.backoffLimit }}
+      backoffLimit: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.backup.cronjob.jobTemplate.ttlSecondsAfterFinished }}
+      ttlSecondsAfterFinished: {{ . }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "vaultwarden.labels" . | nindent 4 }}
+            {{- include "common.labels" ( dict "labels" (list .Values.global.labels .Values.labels .Values.pdb.labels) ) | nindent 4 }}
+          annotations:
+            {{- include "common.annotations" ( dict "annotations" (list .Values.global.annotations .Values.annotations .Values.pdb.annotations) ) | nindent 4 }}
+        spec:
+          serviceAccountName: sa-{{ include "vaultwarden.fullname" . }}
+          {{- include "common.images.pullSecrets" ( dict "images" (list .Values.backup.image) "global" .Values.global) | nindent 6 }}
+          {{- with .Values.backup.pod.affinity }}
+          affinity:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with .Values.backup.pod.securityContext }}
+          securityContext:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with .Values.backup.pod.nodeSelector }}
+          nodeSelector:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with .Values.backup.pod.tolerations }}
+          tolerations:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          {{- with .Values.backup.pod.schedulerName }}
+          schedulerName: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.backup.pod.priorityClassName }}
+          priorityClassName: {{ . | quote }}
+          {{- end }}   
+          {{- with .Values.backup.pod.terminationGracePeriodSeconds }}
+          terminationGracePeriodSeconds: {{ . }}
+          {{- end }}
+          {{- with .Values.backup.pod.restartPolicy }}
+          restartPolicy: {{ . | quote }}
+          {{- end }}
+          {{- with .Values.backup.pod.initContainers }}
+          initContainers:
+            {{- . | toYaml | nindent 8 }}
+          {{- end }}
+          volumes:
+            {{- with (concat .Values.backup.pod.extraVolumes .Values.global.extraVolumes) }}
+            {{- . | toYaml | nindent 8 }}
+            {{- end }}
+            - name: backup
+              {{- if .Values.backup.persistence.enabled }}
+              persistenceVolumeClaim:
+                claimName: {{ include "vaultwarden.fullname" . }}-backup
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+            - name: data
+              persistenceVolumeClaim:
+                claimName: {{ include "vaultwarden.fullname" . }}-data
+          containers:
+            {{- with .Values.backup.pod.sidecarContainers }}
+            {{- . | toYaml | nindent 8 }}
+            {{- end }}
+            - name: backup
+              image: {{ include "common.images.image" ( dict "imageRoot" .Values.backup.image "global" .Values.global "chart" .Chart ) }}
+              imagePullPolicy: {{ include "common.images.pullPolicy" ( dict "imageRoot" .Values.backup.image "global" .Values.global ) }}
+              {{- with .Values.backup.pod.containers.backup.command }}
+              command: 
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              {{- with .Values.backup.pod.containers.backup.args }}
+              args: 
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              {{- with .Values.backup.pod.containers.backup.securityContext }}
+              securityContext: 
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              {{- with .Values.backup.pod.containers.backup.workingDir }}
+              workingDir: {{ . | quote }}
+              {{- end }}
+              {{- with .Values.backup.pod.containers.backup.resources }}
+              resources:
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              {{- with (concat .Values.backup.pod.containers.backup.extraEnvFrom .Values.backup.pod.extraEnvFrom) }}
+              envFrom:
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              {{- with (concat .Values.backup.pod.containers.backup.extraEnvs .Values.backup.pod.extraEnvs) }}
+              env:
+                {{- . | toYaml | nindent 12 }}
+              {{- end }}
+              volumeMounts:
+                {{- with (concat .Values.backup.pod.containers.backup.extraVolumeMounts 
+                                .Values.backup.pod.extraVolumeMounts 
+                                .Values.global.extraVolumeMounts) }}
+                {{- . | toYaml | nindent 12 }}
+                {{- end }}
+                - name: data
+                  mountPath: /data
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+{{- end -}}
