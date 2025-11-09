@@ -3,7 +3,7 @@ entries:
   argocd:
   - apiVersion: v2
     appVersion: v2.14.15
-    created: "2025-11-08T20:02:14.288387336Z"
+    created: "2025-11-09T16:08:21.206462205Z"
     dependencies:
     - name: common
       repository: file://../../common
@@ -31,7 +31,7 @@ entries:
       repository: file://dependencies/dexidp
       version: 0.0.1
     description: ArgoCD Deployment from jnnkrdb.de
-    digest: dcba6010c118d227b99d0c8b186ec0791f9c75f8e3a6fdc1612c156944ef6b98
+    digest: e26547d3b5fcabd6fe330230dfbecbb37df5de68484e000c46d08502c5b1f529
     home: https://github.com/jnnkrdb/helm
     keywords:
     - argocd
@@ -47,7 +47,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: v2.14.15
-    created: "2025-11-08T20:02:14.272978172Z"
+    created: "2025-11-09T16:08:21.191731417Z"
     dependencies:
     - name: common
       repository: file://../../common
@@ -99,7 +99,7 @@ entries:
         url: https://cert-manager.io/public-keys/cert-manager-keyring-2021-09-20-1020CF3C033D4F35BAE1C19E1226061C665DF13E.gpg
     apiVersion: v2
     appVersion: v1.19.1
-    created: "2025-11-08T20:02:14.301599239Z"
+    created: "2025-11-09T16:08:21.221596793Z"
     description: A Helm chart for cert-manager
     digest: f72a727b1749df3521e7a65af5f18505f93b572d758841890270b150344b2b41
     home: https://cert-manager.io
@@ -125,7 +125,7 @@ entries:
       charts.openshift.io/name: HashiCorp Vault
     apiVersion: v2
     appVersion: 1.20.4
-    created: "2025-11-08T20:02:14.309837428Z"
+    created: "2025-11-09T16:08:21.230345153Z"
     description: Official HashiCorp Vault Chart
     digest: fe80fae6a8838c75da9fbde1398f2c10bb4b5c31c425e559507ba99373297de2
     home: https://www.vaultproject.io
@@ -151,7 +151,7 @@ entries:
   vault-secrets-gateway:
   - apiVersion: v2
     appVersion: 0.1.0
-    created: "2025-11-08T20:02:14.315126251Z"
+    created: "2025-11-09T16:08:21.235610073Z"
     description: A Helm chart for Kubernetes
     digest: 3aab57cff35ddbaf155e23451f39845728c62082d0753253a16bd55679f4428c
     name: vault-secrets-gateway
@@ -162,7 +162,7 @@ entries:
   vault-secrets-operator:
   - apiVersion: v2
     appVersion: 1.0.1
-    created: "2025-11-08T20:02:14.323463277Z"
+    created: "2025-11-09T16:08:21.243912903Z"
     description: Official Vault Secrets Operator Chart
     digest: 5019344a8781114a42e125551bdd9578885f512921ba4a76fd1186c11dce02db
     kubeVersion: '>=1.21.0-0'
@@ -176,13 +176,36 @@ entries:
   vaultwarden:
   - apiVersion: v2
     appVersion: 1.34.3
-    created: "2025-11-08T20:02:14.336328481Z"
+    created: "2025-11-09T16:08:21.262399453Z"
     dependencies:
     - name: common
       repository: file://../../common
       version: ^1
     description: VaultWarden Deployment from jnnkrdb.de
-    digest: 75da9b08d6ec64cf68ff70cc3cec786f31af0e35ec4200279dfc494513479437
+    digest: 3c0c243c859928746dd95c22c4ab64e2e22b84e1d1be41bcbf648e5072336d78
+    home: https://github.com/jnnkrdb/helm
+    keywords:
+    - passwordsafe
+    - vault
+    - vaultwarden
+    - bitwarden
+    kubeVersion: '>=1.25.0-0'
+    maintainers:
+    - name: jnnkrdb
+    name: vaultwarden
+    type: application
+    urls:
+    - https://jnnkrdb.github.io/helm/chart.d/vaultwarden-1.0.2.tgz
+    version: 1.0.2
+  - apiVersion: v2
+    appVersion: 1.34.3
+    created: "2025-11-09T16:08:21.255940051Z"
+    dependencies:
+    - name: common
+      repository: file://../../common
+      version: ^1
+    description: VaultWarden Deployment from jnnkrdb.de
+    digest: c10dad589794a2bf9c64d3c3bea32f91214ba8ccefadbf2cb12266c47fe8132a
     home: https://github.com/jnnkrdb/helm
     keywords:
     - passwordsafe
@@ -199,7 +222,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.34.3
-    created: "2025-11-08T20:02:14.32950667Z"
+    created: "2025-11-09T16:08:21.24971034Z"
     dependencies:
     - name: common
       repository: file://../../common
@@ -220,4 +243,4 @@ entries:
     urls:
     - https://jnnkrdb.github.io/helm/chart.d/vaultwarden-1.0.0.tgz
     version: 1.0.0
-generated: "2025-11-08T20:02:14.257028794Z"
+generated: "2025-11-09T16:08:21.175985823Z"

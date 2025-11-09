@@ -64,7 +64,7 @@ spec:
         {{- end }}
         - name: data
           {{- if .Values.persistence.enabled }}
-          persistenceVolumeClaim:
+          persistentVolumeClaim:
             claimName: {{ include "vaultwarden.fullname" . }}-data
           {{- else }}
           emptyDir: {}
